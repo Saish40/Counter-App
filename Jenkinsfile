@@ -61,8 +61,19 @@ pipeline {
          stage('Docker Image build') {
             steps {
                 script {
-                    
+                    sh 'docker build -t $JOBNAME:v1.$BUILD_ID .'
+                    sh 'docker image tag $JOBNAME:v1.$BUILD_ID saish69/$JOBNAME:v1.$BUILD_ID'
+                    sh 'docker image tag $JOBNAME:v1.$BUILD_ID saish69/$JOBNAME:latest'
                 }
+            }
+        }
+        stage('Docker login and push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerpwd', usernameVariable: 'dockerusr')]) {
+                sh "docker login -u ${env.dockerusr} -p ${env.dockerpwd}"
+                }
+                sh 'docker push $JOBNAME:v1.$BUILD_ID saish69/$JOBNAME:v1.$BUILD_ID'
+                sh 'docker push $JOBNAME:v1.$BUILD_ID saish69/$JOBNAME:latest'
             }
         }
     }
